@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	config "osom/pkg"
 	"osom/pkg/app/nextbikes"
 	"time"
 )
@@ -14,10 +15,12 @@ type LocationAvailability struct {
 	AvailableBikes int
 }
 
+const availabilityRadiusMeters = "200"
+
 func FetchAvailability(latitude string, longitude string) ([]LocationAvailability, error) {
-	url, _ := url.Parse("https://api.nextbike.net/maps/nextbike-live.json")
+	url, _ := url.Parse(config.Config.NextBikesApiUrl)
 	q := url.Query()
-	q.Set("distance", "200")
+	q.Set("distance", availabilityRadiusMeters)
 	q.Set("lat", latitude)
 	q.Set("lng", longitude)
 	url.RawQuery = q.Encode()

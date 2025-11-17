@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	config "osom/pkg"
 	"osom/pkg/app"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -16,7 +18,8 @@ var availabilityCmd = &cobra.Command{
 	Short: "Show available bikes",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		availability, err := app.FetchAvailability()
+		latLong := strings.Split(config.Config.DefaultLatLong, ",")
+		availability, err := app.FetchAvailability(latLong[0], latLong[1])
 		if err != nil {
 			panic(err)
 		}
