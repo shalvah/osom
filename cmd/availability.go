@@ -17,6 +17,9 @@ var availabilityCmd = &cobra.Command{
 	Use:   "availability",
 	Short: "Show available bikes",
 	Long:  ``,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		app.GetUserLocation()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		latLong := strings.Split(config.Config.DefaultLatLong, ",")
 		availability, err := app.FetchAvailability(latLong[0], latLong[1])

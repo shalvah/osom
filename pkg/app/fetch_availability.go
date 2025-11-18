@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	config "osom/pkg"
-	"osom/pkg/app/nextbikes"
+	"osom/pkg/nextbikes"
 	"time"
 )
 
@@ -15,7 +15,7 @@ type LocationAvailability struct {
 	AvailableBikes int
 }
 
-const availabilityRadiusMeters = "200"
+const availabilityRadiusMeters = "500"
 
 func FetchAvailability(latitude string, longitude string) ([]LocationAvailability, error) {
 	url, _ := url.Parse(config.Config.NextBikesApiUrl)

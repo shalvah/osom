@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<script>
+  async function onPositionGotten(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    document.body.innerHTML = `Latitude: ${latitude}<br>Longitude: ${longitude}`;
+    // Send to server (POSt /location?lat=...&lon=...)
+    await fetch(`/location?latitude=${latitude}&longitude=${longitude}`, { method: 'POST' });
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(onPositionGotten,
+      (error) => {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            document.body.innerHTML = "User denied the request for Geolocation.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            document.body.innerHTML = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            document.body.innerHTML = "The request to get user location timed out.";
+            break;
+          case error.UNKNOWN_ERROR:
+            document.body.innerHTML = "An unknown error occurred.";
+            break;
+        }
+      }
+    );
+  } else {
+    document.body.innerHTML = "Geolocation is not supported by this browser.";
+  }
+</script>
+</html>

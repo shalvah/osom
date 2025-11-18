@@ -15,6 +15,9 @@ var departuresCmd = &cobra.Command{
 	Use:   "departures",
 	Short: "Find upcoming departures",
 	Long:  ``,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		app.GetUserLocation()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		departures := app.FetchDepartures()
 		fmt.Println(departures)
