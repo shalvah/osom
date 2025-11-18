@@ -26,9 +26,19 @@ var availabilityCmd = &cobra.Command{
 		printAvailability(latLong[0], latLong[1])
 
 		ticker := time.NewTicker(30 * time.Second)
+		done := make(chan bool)
+		go func() {
+			time.Sleep(2 * time.Minute)
+			done <- true
+		}()
 		for {
-			<-ticker.C
-			printAvailability(latLong[0], latLong[1])
+			select {
+			case <-ticker.C:
+				printAvailability(latLong[0], latLong[1])
+			case <-done:
+				ticker.Stop()
+				return
+			}
 		}
 	},
 }
