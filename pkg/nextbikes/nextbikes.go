@@ -98,13 +98,17 @@ type Place struct {
 }
 
 type Bike struct {
-	Number         string   `json:"number"`
-	BikeType       int      `json:"bike_type"`
-	LockTypes      []string `json:"lock_types"`
-	Active         bool     `json:"active"`
-	State          string   `json:"state"`
-	ElectricLock   bool     `json:"electric_lock"`
-	BoardComputer  *int64   `json:"boardcomputer"`
-	PedelecBattery *string  `json:"pedelec_battery"`
-	BatteryPack    *string  `json:"battery_pack"`
+	Number         string       `json:"number"`
+	BikeType       int          `json:"bike_type"`
+	LockTypes      []string     `json:"lock_types"`
+	Active         bool         `json:"active"`
+	State          string       `json:"state"`
+	ElectricLock   bool         `json:"electric_lock"`
+	BoardComputer  *int64       `json:"boardcomputer"`
+	PedelecBattery *int64       `json:"pedelec_battery"`
+	BatteryPack    *BatteryPack `json:"battery_pack"`
+}
+
+type BatteryPack struct {
+	Percentage int `json:"percentage"`
 }
