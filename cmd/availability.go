@@ -8,6 +8,7 @@ import (
 	config "osom/pkg"
 	"osom/pkg/app"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -22,11 +23,13 @@ var availabilityCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		latLong := strings.Split(config.Config.DefaultLatLong, ",")
-		availability, err := app.FetchAvailability(latLong[0], latLong[1])
-		if err != nil {
-			panic(err)
+		printAvailability(latLong[0], latLong[1])
+
+		ticker := time.NewTicker(30 * time.Second)
+		for {
+			<-ticker.C
+			printAvailability(latLong[0], latLong[1])
 		}
-		fmt.Println(availability)
 	},
 }
 
@@ -42,4 +45,12 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// availabilityCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func printAvailability(lat string, long string) {
+	availability, err := app.FetchAvailability(lat, long)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(availability)
 }

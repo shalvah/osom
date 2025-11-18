@@ -38,8 +38,7 @@ func GetUserLocation() {
 
 		// Close the server in a goroutine to prevent deadlocks (server is waiting for this handler to finish)
 		go func() {
-			ctx, cancel := context.WithTimeout(c, 2*time.Second)
-			defer cancel()
+			ctx := context.Background()
 			if err := server.Shutdown(ctx); err != nil {
 				log.Fatalf("Server Shutdown Failed:%v", err)
 				return
