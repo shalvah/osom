@@ -5,6 +5,9 @@ import (
 )
 
 type AppConfig struct {
+	AppEnv    string
+	LogFormat string
+
 	DefaultLatLong        string
 	NextBikesApiUrl       string
 	VrnApiUrl             string
@@ -16,10 +19,13 @@ type AppConfig struct {
 
 var Config AppConfig
 
-func Init() {
+func InitConfig() {
 	viper.AutomaticEnv()
 
 	// read env values explicitly into the struct (AutomaticEnv doesnt work with Unmarshal)
+	Config.AppEnv = viper.GetString("APP_ENV")
+	Config.LogFormat = viper.GetString("LOG_FORMAT")
+
 	Config.DefaultLatLong = viper.GetString("DEFAULT_LATLONG")
 	Config.NextBikesApiUrl = viper.GetString("NEXTBIKES_API_URL")
 	Config.VrnApiUrl = viper.GetString("VRN_API_URL")

@@ -6,7 +6,7 @@ package main
 import (
 	"fmt"
 	"osom/cmd"
-	config "osom/pkg"
+	pkg "osom/pkg"
 
 	"github.com/joho/godotenv"
 )
@@ -16,7 +16,8 @@ func main() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	config.Init()
+	pkg.InitConfig()
+	pkg.InitLogging()
 
 	cmd.Execute()
 }
