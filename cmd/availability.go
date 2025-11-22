@@ -4,6 +4,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	config "osom/pkg"
 	"osom/pkg/app"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/spf13/cobra"
 )
+import mqtt "github.com/eclipse/paho.mqtt.golang"
 
 // availabilityCmd represents the availability command
 var availabilityCmd = &cobra.Command{
@@ -23,7 +25,8 @@ var availabilityCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		latLong := strings.Split(config.Config.DefaultLatLong, ",")
-		printAvailability(latLong[0], latLong[1])
+		availability := printAvailability(latLong[0], latLong[1])
+		publishAvailability(availability)
 
 		ticker := time.NewTicker(30 * time.Second)
 		done := make(chan bool)
@@ -43,6 +46,24 @@ var availabilityCmd = &cobra.Command{
 	},
 }
 
+func publishAvailability(availability []app.LocationAvailability) {
+	mqttClient := mqtt.NewClient(
+		mqtt.NewClientOptions().
+			AddBroker(config.Config.MQTTUrl).
+			SetClientID("osom-availability-publisher").
+			SetUsername(config.Config.MQTTUsername).
+			SetPassword(config.Config.MQTTPassword),
+	)
+	mqttClient.Connect().Wait()
+	fmt.Println("Publishing...")
+
+	for _, loc := range availability {
+		payload, _ := json.Marshal(loc)
+		mqttClient.Publish(config.Config.AvailabilityMQTTTopic, 1, false, payload).Wait()
+		fmt.Println("Published")
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(availabilityCmd)
 
@@ -57,10 +78,11 @@ func init() {
 	// availabilityCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func printAvailability(lat string, long string) {
+func printAvailability(lat string, long string) []app.LocationAvailability {
 	availability, err := app.FetchAvailability(lat, long)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(availability)
+	return availability
 }
