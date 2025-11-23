@@ -8,6 +8,8 @@ import (
 	config "osom/pkg"
 	"osom/pkg/nextbikes"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type LocationAvailability struct {
@@ -25,7 +27,10 @@ func FetchAvailability(ctx context.Context, latitude string, longitude string) (
 	q.Set("lng", longitude)
 	url.RawQuery = q.Encode()
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return nil, err
