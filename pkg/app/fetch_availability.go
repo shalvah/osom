@@ -1,8 +1,8 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	config "osom/pkg"
@@ -17,7 +17,7 @@ type LocationAvailability struct {
 
 const availabilityRadiusMeters = "500"
 
-func FetchAvailability(latitude string, longitude string) ([]LocationAvailability, error) {
+func FetchAvailability(ctx context.Context, latitude string, longitude string) ([]LocationAvailability, error) {
 	url, _ := url.Parse(config.Config.NextBikesApiUrl)
 	q := url.Query()
 	q.Set("distance", availabilityRadiusMeters)
@@ -25,10 +25,8 @@ func FetchAvailability(latitude string, longitude string) ([]LocationAvailabilit
 	q.Set("lng", longitude)
 	url.RawQuery = q.Encode()
 
-	fmt.Println(url)
-
 	client := &http.Client{Timeout: 10 * time.Second}
-	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return nil, err
 	}

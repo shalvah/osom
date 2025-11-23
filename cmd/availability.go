@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 import mqtt "github.com/eclipse/paho.mqtt.golang"
 
@@ -32,7 +34,7 @@ var availabilityCmd = &cobra.Command{
 		ticker := time.NewTicker(30 * time.Second)
 		done := make(chan bool)
 		go func() {
-			time.Sleep(2 * time.Minute)
+			time.Sleep(30 * time.Second)
 			done <- true
 		}()
 		for {
@@ -57,11 +59,13 @@ func publishAvailability(ctx context.Context, availability []app.LocationAvailab
 	)
 	mqttClient.Connect().Wait()
 
+	currentCommandSpan.AddEvent("Published availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
 	slog.InfoContext(ctx, "Publishing availability to MQTT", slog.String("topic", config.Config.AvailabilityMQTTTopic))
 
 	payload, _ := json.Marshal(availability)
 	mqttClient.Publish(config.Config.AvailabilityMQTTTopic, 1, false, payload).Wait()
 
+	currentCommandSpan.AddEvent("Published availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
 	slog.InfoContext(ctx, "Published availability to MQTT")
 }
 
@@ -80,9 +84,11 @@ func init() {
 }
 
 func printAvailability(ctx context.Context, lat string, long string) []app.LocationAvailability {
-	availability, err := app.FetchAvailability(lat, long)
+	currentCommandSpan.AddEvent("Fetching availability from VRN API")
+	availability, err := app.FetchAvailability(ctx, lat, long)
 	if err != nil {
 		panic(err)
 	}
+	currentCommandSpan.AddEvent("Fetched availability from VRN API")
 	return availability
 }
