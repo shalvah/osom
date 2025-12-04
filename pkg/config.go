@@ -8,13 +8,14 @@ type AppConfig struct {
 	AppEnv    string
 	LogFormat string
 
-	DefaultLatLong        string
-	NextBikesApiUrl       string
-	VrnApiUrl             string
-	MQTTUrl               string
-	MQTTUsername          string
-	MQTTPassword          string
-	AvailabilityMQTTTopic string
+	DefaultLatLong            string
+	NextBikesApiUrl           string
+	VrnApiUrl                 string
+	MQTTUrl                   string
+	MQTTUsername              string
+	MQTTPassword              string
+	AvailabilityMQTTTopic     string
+	IncomingRequestsMQTTTopic string
 }
 
 var Config AppConfig
@@ -33,4 +34,5 @@ func InitConfig() {
 	Config.MQTTUsername = viper.GetString("MQTT_USERNAME")
 	Config.MQTTPassword = viper.GetString("MQTT_PASSWORD")
 	Config.AvailabilityMQTTTopic = viper.GetString("AVAILABILITY_MQTT_TOPIC")
+	Config.IncomingRequestsMQTTTopic = viper.GetString("INCOMING_REQUESTS_MQTT_TOPIC")
 }
