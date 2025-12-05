@@ -91,27 +91,21 @@ func listenForRequests(ctx context.Context, mqttClient mqtt.Client) {
 		slog.SetDefault(slog.Default().With(slog.String("trace_id", span.SpanContext().TraceID().String())))
 
 		slog.InfoContext(ctx, "Received MQTT request", slog.String("topic", msg.Topic()))
-		payloadStr := msg.Payload()
+		messageBytes := msg.Payload()
 		span.AddEvent("Received MQTT request", trace.WithAttributes(
 			attribute.String("topic", msg.Topic()),
-			attribute.String("payload", string(payloadStr)),
+			attribute.String("payload", string(messageBytes)),
 		))
 
-		var payloadParsed struct {
-			payload MQTTRequestPayload
-		}
-		err := json.Unmarshal(payloadStr, &payloadParsed)
+		var payloadParsed MQTTRequestPayload
+		err := parseMqttMessage(ctx, messageBytes, &payloadParsed)
 		if err != nil {
-			slog.ErrorContext(ctx, "Failed to parse MQTT request payload", slog.String("error", err.Error()))
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
 			return
 		}
 
-		availability, err := app.FetchAvailability(ctx, payloadParsed.payload.Latitude, payloadParsed.payload.Longitude)
+		availability, err := app.FetchAvailability(ctx, payloadParsed.Latitude, payloadParsed.Longitude)
 		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
+			recordError(ctx, err, "Failed to fetch availability")
 			return
 		}
 		publishAvailability(ctx, availability)
@@ -139,4 +133,31 @@ func listenForErrors(ctx context.Context, mqttClient mqtt.Client) {
 	} else {
 		slog.InfoContext(ctx, "Subscribed to MQTT errors topic")
 	}
+}
+
+func parseMqttMessage[T any](ctx context.Context, messageBytes []byte, payloadParsed *T) error {
+	var messageParsed struct {
+		Data struct {
+			Value string `json:"value"`
+		} `json:"data"`
+	}
+	err := json.Unmarshal(messageBytes, &messageParsed)
+	if err != nil {
+		recordError(ctx, err, "Failed to parse MQTT message wrapper")
+		return err
+	}
+
+	err = json.Unmarshal([]byte(messageParsed.Data.Value), payloadParsed)
+	if err != nil {
+		recordError(ctx, err, "Failed to parse MQTT request payload")
+		return err
+	}
+	return nil
+}
+
+func recordError(ctx context.Context, err error, msg string) {
+	span := trace.SpanFromContext(ctx)
+	slog.ErrorContext(ctx, msg, slog.String("error", err.Error()))
+	span.RecordError(err)
+	span.SetStatus(codes.Error, err.Error())
 }
