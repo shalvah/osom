@@ -147,7 +147,7 @@ func listenForErrors(ctx context.Context, mqttClient mqtt.Client) {
 func parseMqttMessage[T any](ctx context.Context, messageBytes []byte, payloadParsed *T) error {
 	var messageParsed struct {
 		Data struct {
-			Value string `json:"values"`
+			Value string `json:"value"`
 		} `json:"data"`
 	}
 	err := json.Unmarshal(messageBytes, &messageParsed)
