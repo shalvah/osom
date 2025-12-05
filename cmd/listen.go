@@ -123,6 +123,8 @@ func listenForRequests(ctx context.Context, mqttClient mqtt.Client) {
 	}
 }
 
+// Adafruit communicates publish/subscribe errors on error topics.
+// See https://io.adafruit.com/api/docs/mqtt.html#troubleshooting
 func listenForErrors(ctx context.Context, mqttClient mqtt.Client) {
 	subscribeToken := mqttClient.Subscribe("shalvah/errors", 1, func(client mqtt.Client, msg mqtt.Message) {
 		payloadStr := msg.Payload()
