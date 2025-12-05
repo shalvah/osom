@@ -1,5 +1,5 @@
 Server:
-- [ ] Add Sentry
+- [x] Add Sentry
 - [ ] Set up server:
   - [ ] Go binary
   - [ ] OTel collector

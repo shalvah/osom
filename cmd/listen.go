@@ -9,6 +9,7 @@ import (
 	"osom/pkg/app"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/getsentry/sentry-go"
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -72,7 +73,15 @@ type MQTTRequestPayload struct {
 
 func listenForRequests(ctx context.Context, mqttClient mqtt.Client) {
 	subscribeToken := mqttClient.Subscribe(config.Config.IncomingRequestsMQTTTopic, 1, func(client mqtt.Client, msg mqtt.Message) {
-		// Create a new context, so each MQTT request is traced separately.
+		// Create a new Sentry and OTel context, so each MQTT request is traced separately.
+		// hub := sentry.NewHub(sentry.CurrentHub().Client(), sentry.NewScope())
+		// hub.ConfigureScope(func(scope *sentry.Scope) {
+		// 	scope.SetContext("mqtt", map[string]interface{}{
+		// 		"topic":   msg.Topic(),
+		// 		"payload": string(msg.Payload()),
+		// 	})
+		// })
+		// ctx = sentry.SetHubOnContext(ctx, hub)
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 
@@ -138,7 +147,7 @@ func listenForErrors(ctx context.Context, mqttClient mqtt.Client) {
 func parseMqttMessage[T any](ctx context.Context, messageBytes []byte, payloadParsed *T) error {
 	var messageParsed struct {
 		Data struct {
-			Value string `json:"value"`
+			Value string `json:"values"`
 		} `json:"data"`
 	}
 	err := json.Unmarshal(messageBytes, &messageParsed)
@@ -157,6 +166,13 @@ func parseMqttMessage[T any](ctx context.Context, messageBytes []byte, payloadPa
 
 func recordError(ctx context.Context, err error, msg string) {
 	span := trace.SpanFromContext(ctx)
+	// hub := sentry.GetHubFromContext(ctx)
+	// hub.Scope().SetContext("trace", map[string]interface{}{
+	// 	"trace_id": span.SpanContext().TraceID().String(),
+	// 	"span_id":  span.SpanContext().SpanID().String(),
+	// })
+	// hub.CaptureException(err)
+	sentry.CaptureException(err)
 	slog.ErrorContext(ctx, msg, slog.String("error", err.Error()))
 	span.RecordError(err)
 	span.SetStatus(codes.Error, err.Error())
