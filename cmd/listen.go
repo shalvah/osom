@@ -97,7 +97,9 @@ func listenForRequests(ctx context.Context, mqttClient mqtt.Client) {
 			attribute.String("payload", string(payloadStr)),
 		))
 
-		var payloadParsed MQTTRequestPayload
+		var payloadParsed struct {
+			payload MQTTRequestPayload
+		}
 		err := json.Unmarshal(payloadStr, &payloadParsed)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to parse MQTT request payload", slog.String("error", err.Error()))
@@ -106,7 +108,7 @@ func listenForRequests(ctx context.Context, mqttClient mqtt.Client) {
 			return
 		}
 
-		availability, err := app.FetchAvailability(ctx, payloadParsed.Latitude, payloadParsed.Longitude)
+		availability, err := app.FetchAvailability(ctx, payloadParsed.payload.Latitude, payloadParsed.payload.Longitude)
 		if err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
