@@ -14,7 +14,7 @@ import (
 var testRequestCmd = &cobra.Command{
 	Use:   "test-request",
 	Short: "Publishes a test request to the MQTT topic",
-	Long:  `Publishes a test request to the MQTT topic to trigger the listen command.`,
+	Long:  `Publishes a test request to the MQTT topic to trigger the server command.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := cmd.Context()
 		lat, _ := cmd.Flags().GetString("lat")

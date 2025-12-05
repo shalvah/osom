@@ -20,7 +20,7 @@ var rootCmd = &cobra.Command{
 	Short: "Show upcoming departures and bike availability close to you",
 	Long:  `Show upcoming departures and bike availability close to yous`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// This is bad for the "listen" command, since it runs like a web server.
+		// This is bad for the "server" command, since it runs like a web server.
 		// currentCmdCtx, currentCommandSpan = tracer.Start(cmd.Context(), "command: "+cmd.DisplayName())
 		// cmd.SetContext(currentCmdCtx)
 		// slog.SetDefault(slog.Default().With(slog.String("trace_id", currentCommandSpan.SpanContext().TraceID().String())))

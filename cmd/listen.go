@@ -19,9 +19,9 @@ import (
 
 var activeSpans []trace.Span
 
-// listenCmd represents the listen command
-var listenCmd = &cobra.Command{
-	Use:   "listen",
+// serverCmd represents the server command
+var serverCmd = &cobra.Command{
+	Use:   "server",
 	Short: "Serves MQTT requests for availability and departures",
 	Long:  `Listens for incoming MQTT requests and publishes availability and departure information.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -53,17 +53,17 @@ var listenCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(listenCmd)
+	rootCmd.AddCommand(serverCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// listenCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// listenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 type MQTTRequestPayload struct {
