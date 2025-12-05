@@ -50,6 +50,7 @@ var availabilityCmd = &cobra.Command{
 }
 
 func publishAvailability(ctx context.Context, availability []app.LocationAvailability) {
+	currentSpan := trace.SpanFromContext(ctx)
 	mqttClient := mqtt.NewClient(
 		mqtt.NewClientOptions().
 			AddBroker(config.Config.MQTTUrl).
@@ -59,13 +60,13 @@ func publishAvailability(ctx context.Context, availability []app.LocationAvailab
 	)
 	mqttClient.Connect().Wait()
 
-	currentCommandSpan.AddEvent("Published availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
+	currentSpan.AddEvent("Publishing availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
 	slog.InfoContext(ctx, "Publishing availability to MQTT", slog.String("topic", config.Config.AvailabilityMQTTTopic))
 
 	payload, _ := json.Marshal(availability)
 	mqttClient.Publish(config.Config.AvailabilityMQTTTopic, 1, false, payload).Wait()
 
-	currentCommandSpan.AddEvent("Published availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
+	currentSpan.AddEvent("Published availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
 	slog.InfoContext(ctx, "Published availability to MQTT")
 }
 
@@ -84,11 +85,12 @@ func init() {
 }
 
 func printAvailability(ctx context.Context, lat string, long string) []app.LocationAvailability {
-	currentCommandSpan.AddEvent("Fetching availability from VRN API")
+	currentSpan := trace.SpanFromContext(ctx)
+	currentSpan.AddEvent("Fetching availability from VRN API")
 	availability, err := app.FetchAvailability(ctx, lat, long)
 	if err != nil {
 		panic(err)
 	}
-	currentCommandSpan.AddEvent("Fetched availability from VRN API")
+	currentSpan.AddEvent("Fetched availability from VRN API")
 	return availability
 }

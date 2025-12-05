@@ -36,7 +36,7 @@ func InitLogging() {
 			panic(fmt.Errorf("failed to open log file: %w", err))
 		}
 		defer f.Close()
-		handler := slog.NewJSONHandler(io.MultiWriter(os.Stdout, f), nil)
+		handler := slog.NewJSONHandler(io.MultiWriter(os.Stdout, f), &slog.HandlerOptions{Level: slog.Level(-4)})
 		base := slog.New(handler)
 		defaultLogger := base.With(slog.String("env", Config.AppEnv))
 		slog.SetDefault(defaultLogger)

@@ -2,14 +2,11 @@ package cmd
 
 import (
 	"context"
-	"log/slog"
 	"os"
 
 	"github.com/spf13/cobra"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
-
-	config "osom/pkg"
 )
 
 var otelShutdown func(context.Context) error
@@ -23,15 +20,10 @@ var rootCmd = &cobra.Command{
 	Short: "Show upcoming departures and bike availability close to you",
 	Long:  `Show upcoming departures and bike availability close to yous`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		shutdown, err := config.SetupOTelSDK(cmd.Context())
-		otelShutdown = shutdown
-		if err != nil {
-			panic(err)
-		}
-
-		currentCmdCtx, currentCommandSpan = tracer.Start(cmd.Context(), "command: "+cmd.DisplayName())
-		cmd.SetContext(currentCmdCtx)
-		slog.SetDefault(slog.Default().With(slog.String("trace_id", currentCommandSpan.SpanContext().TraceID().String())))
+		// This is bad for the "listen" command, since it runs like a web server.
+		// currentCmdCtx, currentCommandSpan = tracer.Start(cmd.Context(), "command: "+cmd.DisplayName())
+		// cmd.SetContext(currentCmdCtx)
+		// slog.SetDefault(slog.Default().With(slog.String("trace_id", currentCommandSpan.SpanContext().TraceID().String())))
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -40,8 +32,8 @@ var rootCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
+func ExecuteContext(ctx context.Context) {
+	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -60,7 +52,7 @@ func init() {
 
 	// TODO check that this works on SIGTERM
 	cobra.OnFinalize(func() {
-		currentCommandSpan.End()
+		// currentCommandSpan.End()
 		// ensure we flush before exit
 		if otelShutdown != nil {
 			_ = otelShutdown(currentCmdCtx)
