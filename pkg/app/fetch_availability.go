@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 	config "osom/pkg"
@@ -20,9 +21,9 @@ type LocationAvailability struct {
 const availabilityRadiusMeters = "500"
 
 func FetchAvailability(ctx context.Context, latitude string, longitude string) ([]LocationAvailability, error) {
-	// if latitude == "" || longitude == "" {
-	// 	return nil, errors.New("latitude and longitude are required")
-	// }
+	if latitude == "" || longitude == "" {
+		return nil, errors.New("latitude and longitude are required")
+	}
 
 	url, _ := url.Parse(config.Config.NextBikesApiUrl)
 	q := url.Query()
