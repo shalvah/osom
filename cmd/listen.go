@@ -36,7 +36,8 @@ var listenCmd = &cobra.Command{
 				SetUsername(config.Config.MQTTUsername).
 				SetPassword(config.Config.MQTTPassword).
 				SetOnConnectHandler(func(c mqtt.Client) {
-					startMQTTListener(ctx, c)
+					listenForRequests(ctx, c)
+					listenForErrors(ctx, c)
 				}).SetConnectionLostHandler(mqtt.DefaultConnectionLostHandler),
 		)
 		mqttClient.Connect().Wait()
@@ -69,7 +70,7 @@ type MQTTRequestPayload struct {
 	Longitude string `json:"long"`
 }
 
-func startMQTTListener(ctx context.Context, mqttClient mqtt.Client) {
+func listenForRequests(ctx context.Context, mqttClient mqtt.Client) {
 	subscribeToken := mqttClient.Subscribe(config.Config.IncomingRequestsMQTTTopic, 1, func(client mqtt.Client, msg mqtt.Message) {
 		// Create a new context, so each MQTT request is traced separately.
 		ctx, cancel := context.WithCancel(ctx)
@@ -119,5 +120,19 @@ func startMQTTListener(ctx context.Context, mqttClient mqtt.Client) {
 		panic(fmt.Sprintf("Failed to subscribe to MQTT topic: %s", err.Error()))
 	} else {
 		slog.InfoContext(ctx, "Subscribed to MQTT topic", slog.String("topic", config.Config.IncomingRequestsMQTTTopic))
+	}
+}
+
+func listenForErrors(ctx context.Context, mqttClient mqtt.Client) {
+	subscribeToken := mqttClient.Subscribe("shalvah/errors", 1, func(client mqtt.Client, msg mqtt.Message) {
+		payloadStr := msg.Payload()
+		slog.ErrorContext(ctx, "Received MQTT error", slog.String("payload", string(payloadStr)))
+	})
+
+	subscribeToken.Wait()
+	if err := subscribeToken.Error(); err != nil {
+		panic(fmt.Sprintf("Failed to subscribe to MQTT errors topic: %s", err.Error()))
+	} else {
+		slog.InfoContext(ctx, "Subscribed to MQTT errors topic")
 	}
 }
