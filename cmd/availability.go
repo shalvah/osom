@@ -60,15 +60,18 @@ func publishAvailability(ctx context.Context, availability []app.LocationAvailab
 	)
 	mqttClient.Connect().Wait()
 
-	payloadStr, _ := json.Marshal(availability)
+	message := map[string]any{
+		"locations": availability,
+		"timestamp": time.Now().UTC().Format(time.RFC1123Z),
+	}
+	payloadStr, _ := json.Marshal(message)
 	currentSpan.AddEvent("Publishing availability to MQTT", trace.WithAttributes(
 		attribute.String("topic", config.Config.AvailabilityMQTTTopic),
 		attribute.String("payload", string(payloadStr)),
 	))
 	slog.InfoContext(ctx, "Publishing availability to MQTT", slog.String("payload", string(payloadStr)))
 
-	payload, _ := json.Marshal(availability)
-	mqttClient.Publish(config.Config.AvailabilityMQTTTopic, 1, false, payload).Wait()
+	mqttClient.Publish(config.Config.AvailabilityMQTTTopic, 1, false, payloadStr).Wait()
 
 	currentSpan.AddEvent("Published availability to MQTT", trace.WithAttributes(attribute.String("topic", config.Config.AvailabilityMQTTTopic)))
 	slog.InfoContext(ctx, "Published availability to MQTT")
