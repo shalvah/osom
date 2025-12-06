@@ -37,8 +37,8 @@ var serverCmd = &cobra.Command{
 				SetUsername(config.Config.MQTTUsername).
 				SetPassword(config.Config.MQTTPassword).
 				SetOnConnectHandler(func(c mqtt.Client) {
-					listenForRequests(ctx, c)
 					listenForErrors(ctx, c)
+					listenForRequests(ctx, c)
 				}).SetConnectionLostHandler(mqtt.DefaultConnectionLostHandler),
 		)
 		mqttClient.Connect().Wait()
