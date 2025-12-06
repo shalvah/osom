@@ -59,6 +59,7 @@ var testRequestCmd = &cobra.Command{
 		} else {
 			slog.InfoContext(ctx, "Published MQTT message", "topic", config.Config.IncomingRequestsMQTTTopic)
 		}
+		mqttClient.Disconnect(250)
 	},
 }
 

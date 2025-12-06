@@ -49,6 +49,7 @@ var serverCmd = &cobra.Command{
 		for _, span := range activeSpans {
 			span.End()
 		}
+		mqttClient.Disconnect(250)
 	},
 }
 
